@@ -1,143 +1,122 @@
 package de.h_da.fbi.ga.mo12.parisek.genetics;
 
 import de.h_da.fbi.ga.mo12.parisek.Direction;
-import de.h_da.fbi.ga.mo12.parisek.genetics.Aminoacid;
-import de.h_da.fbi.ga.mo12.parisek.genetics.Sequence;
+import de.h_da.fbi.ga.mo12.parisek.Position;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Random;
 
+
 public class Protein {
-    ArrayList<Aminoacid> elements;
+    protected ArrayList<Aminoacid> genotype;
+    protected ArrayList<PositionedAminoacid> phenotype = null;
+    protected Double fitness = 0d;
+    protected ProteinInfo properties = new ProteinInfo();
 
-    public Protein(Sequence sequence) {
-        elements = new ArrayList<>();
-
-        Iterator<Boolean> iter = sequence.getSequence().iterator();
-        while (iter.hasNext()) {
-            Aminoacid current = new Aminoacid(iter.next(), Direction.EAST);
-            elements.add(current);
-        }
+    public ProteinInfo getProperties() {
+        return properties;
     }
 
-    public Protein() {
-        elements = null;
+    public ArrayList<PositionedAminoacid> getPhenotype() {
+        return phenotype;
+    }
+
+    public Protein(Sequence sequence) {
+        this(sequence, true);
     }
 
     public Protein(Sequence sequence, Boolean randomize) {
-        this(sequence);
-        if(randomize) { fold(); }
+        // Parse sequence
+        genotype = new ArrayList<>();
+        Iterator<Boolean> iter = sequence.getSequence().iterator();
+        while (iter.hasNext()) {
+            Aminoacid current = new Aminoacid(iter.next(), Direction.EAST);
+            genotype.add(current);
+        }
+
+        if(randomize) { foldRandomly(); }
     }
 
-    public void fold() {
+    public void foldRandomly() {
         Random random = new Random();
-
-        Iterator<Aminoacid> iter = elements.iterator();
+        Iterator<Aminoacid> iter = genotype.iterator();
         while(iter.hasNext()) {
             Aminoacid current = iter.next();
-            Direction randomDirection = Direction.class.getEnumConstants()[random.nextInt(Direction.class.getEnumConstants().length)];
+            Integer optionCount = Direction.class.getEnumConstants().length;
+            Integer randomNumber = random.nextInt(optionCount);
+            Direction randomDirection = Direction.class.getEnumConstants()[randomNumber];
             current.nextDirection = randomDirection;
         }
+
+        calculatePositions();
+        calculateFitness();
     }
 
-    public Double calculateFitness() {
-        ListIterator<Aminoacid> iter = elements.listIterator();
-        Double fitness = 0d;
+    private void calculatePositions() {
+        phenotype = new ArrayList<>();
+        Position cursor = new Position(0, 0);
 
-        Integer x = 0;
-        Integer y = 0;
+        for(Aminoacid element : genotype) {
+            PositionedAminoacid aminoacid = new PositionedAminoacid(element, cursor);
+            phenotype.add(aminoacid);
+            cursor.move(element.getNextDirection());
+        }
+    }
+
+    private void calculateFitness() {
+        fitness = 0d;
+        properties.hhBonds = 0;
+        properties.overlaps = 0;
+
+        ListIterator<PositionedAminoacid> iter = phenotype.listIterator();
         while(iter.hasNext()) {
-
-            getHHBonds(iter, x, y);
-
+            compareWithRemaining(iter);
         }
 
-        return fitness;
+        fitness = (double) properties.hhBonds / (double) (1 + properties.overlaps);
     }
 
-    private ProteinInfo getHHBonds(ListIterator<Aminoacid> iter, Integer x, Integer y) {
-        ListIterator<Aminoacid> collectionIter = elements.listIterator(iter.nextIndex());
-        Aminoacid current = iter.next();
+    private void compareWithRemaining(ListIterator<PositionedAminoacid> iter) {
+        ListIterator<PositionedAminoacid> accumulator = phenotype.listIterator(iter.nextIndex());
+        PositionedAminoacid current = iter.next();
 
-        // Skip next amino acid
-        if(collectionIter.hasNext()) { collectionIter.next(); }
+        // Skip next (one) amino acid
+        if(accumulator.hasNext()) { accumulator.next(); } else { return; }
 
         // Count
-        ProteinInfo info = new ProteinInfo();
-        Integer x2 = x;
-        Integer y2 = y;
-        while(collectionIter.hasNext()) {
-            Aminoacid other = collectionIter.next();
+        while(accumulator.hasNext()) {
+            PositionedAminoacid other = accumulator.next();
 
-            if(areBothHydrophobic(current, other) && areNeighbors(x, y, x2, y2)) {
-                info.hhBonds += 1;
-            }
-            if(areOverlapping(x, y, x2, y2)) {
-                info.overlaps += 1;
-            }
+            if(current.isOverlappingWith(other)) {
+                // 0 apart
+                ++properties.overlaps;
+            } else if(current.isNeighborsWith(other) && current.isHydrophobic && other.isHydrophobic) {
+                // 1 apart
+                ++properties.hhBonds;
+            } /*else {
 
-            x2 = getDeltaX(current);
-            y2 = getDeltaY(current);
+            }*/
+
 
         }
-
-        return info;
-    }
-
-    private Integer getDeltaX(Aminoacid current) {
-        Integer x2;
-        x2 = switch (current.nextDirection) {
-            case EAST -> 1;
-            case WEST -> -1;
-            default -> 0;
-        };
-        return x2;
-    }
-
-    private Integer getDeltaY(Aminoacid current) {
-        Integer y2;
-        y2 = switch (current.nextDirection) {
-            case SOUTH -> 1;
-            case NORTH -> -1;
-            default -> 0;
-        };
-        return y2;
-    }
-
-    private boolean areBothHydrophobic(Aminoacid current, Aminoacid other) {
-        return current.isHydrophilic.equals(other.isHydrophilic);
-    }
-
-    private Boolean areNeighbors(Integer x, Integer y, Integer x2, Integer y2) {
-        if(y.equals(y2)) {
-            if(x.equals(x2 - 1) || x.equals(x2 + 1)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if(x.equals(x2)) {
-            if(y.equals(y2 - 1) || y.equals(y2 + 1)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    private Boolean areOverlapping(Integer x, Integer y, Integer x2, Integer y2) {
-        return (x.equals(x2) && y.equals(y2));
     }
 
     public Double getFitness() {
-        return 0d;
+        return fitness;
     }
 
-    private class ProteinInfo {
-        public Integer hhBonds = 0;
-        public Integer overlaps = 0;
+    public class ProteinInfo {
+        protected Integer hhBonds = 0;
+        protected Integer overlaps = 0;
+
+        public Integer getHhBonds() {
+            return hhBonds;
+        }
+
+        public Integer getOverlaps() {
+            return overlaps;
+        }
     }
 }

@@ -1,35 +1,63 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import de.h_da.fbi.ga.mo12.parisek.genetics.Generation;
+
+import javax.imageio.ImageIO;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 public class Logger {
+    private final static String folder = "logs";
+    private final static String filename = "population.csv";
+    private final FileOutputStream stream;
 
-    public void generateLog() {
-        String firstLine = "Generation\tAverage fitness\tBest fitness\tPeak fitness\tHydrophobe contacts\tOverlaps";
-    }
+    public Logger() {
+        if (new File(folder).exists() == false) {
+            new File(folder).mkdirs();
+        }
+        File file = new File(folder + File.separator + filename);
+        System.out.println("Saving log to " + file.getAbsolutePath());
 
-    public PrintWriter getPrintWriter() {
-        String folder = "/tmp/alex/ga";
-        /*
-        Date now = new Date();
-        Long unixTime = now.getTime();
-        String filename = unixTime.toString() + ".csv";
-         */
-        String filename = "population.csv";
-        if (new File(folder).exists() == false) new File(folder).mkdirs();
-        File f = new File(folder + File.separator + filename);
-
-        PrintWriter printWriter = null;
+        FileOutputStream stream1;
         try {
-            printWriter = new PrintWriter(f);
+            stream1 = new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            stream1 = null;
+            e.printStackTrace();
+        }
+        stream = stream1;
+
+        try {
+            stream.write("Generation,Avg. fitness,Best fitness,Peak fitness,Hp contacts,Overlaps\n".getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(0);
         }
-
-        return printWriter;
     }
+
+    public void log(String prompt) {
+        try {
+            stream.write(prompt.getBytes(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void log(Generation generation) {
+        StringBuilder line = new StringBuilder()
+            .append(generation.getNumber())
+            .append(",")
+            .append(generation.getAverageFitness())
+            .append(",")
+            .append(generation.getBestCandidate().getFitness())
+            .append(",")
+            .append("NaN")
+            .append(",")
+            .append(generation.getBestCandidate().getProperties().getHhBonds())
+            .append(",")
+            .append(generation.getBestCandidate().getProperties().getOverlaps())
+            .append("\n");
+        log(line.toString());
+    }
+
 }

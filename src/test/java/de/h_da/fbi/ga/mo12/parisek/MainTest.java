@@ -36,6 +36,7 @@ public class MainTest {
         Aminoacid a17 = new Aminoacid(true, Direction.SOUTH);
         Aminoacid a18 = new Aminoacid(false, Direction.WEST);
 
+        /*
         Protein p = new Protein();
         p.elements = new ArrayList<>();
         p.elements.add(a01);
@@ -56,6 +57,7 @@ public class MainTest {
         p.elements.add(a16);
         p.elements.add(a17);
         p.elements.add(a18);
+         */
     }
 
 }

@@ -14,18 +14,18 @@ public class Sequence {
             Character s : sequence.toCharArray()
         ) {
 
-            Boolean isHydrophilic = null;
+            Boolean isHydrophobic = null;
             if(s.equals('0')) {
-                isHydrophilic = false;
+                isHydrophobic = false;
             } else if (s.equals('1')) {
-                isHydrophilic = true;
+                isHydrophobic = true;
             }
 
-            if(isHydrophilic == null) {
+            if(isHydrophobic == null) {
                 throw new Exception("Invalid character spotted when trying to parse sequence.");
             }
 
-            this.sequence.add(isHydrophilic);
+            this.sequence.add(isHydrophobic);
 
         }
 
