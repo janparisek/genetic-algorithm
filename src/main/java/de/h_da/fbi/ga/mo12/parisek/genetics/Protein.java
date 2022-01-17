@@ -4,7 +4,6 @@ import de.h_da.fbi.ga.mo12.parisek.Direction;
 import de.h_da.fbi.ga.mo12.parisek.Position;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Random;
 
@@ -30,9 +29,8 @@ public class Protein {
     public Protein(Sequence sequence, Boolean randomize) {
         // Parse sequence
         genotype = new ArrayList<>();
-        Iterator<Boolean> iter = sequence.getSequence().iterator();
-        while (iter.hasNext()) {
-            Aminoacid current = new Aminoacid(iter.next(), Direction.EAST);
+        for (Boolean aBoolean : sequence.getSequence()) {
+            Aminoacid current = new Aminoacid(aBoolean, Direction.EAST);
             genotype.add(current);
         }
 
@@ -41,13 +39,10 @@ public class Protein {
 
     public void foldRandomly() {
         Random random = new Random();
-        Iterator<Aminoacid> iter = genotype.iterator();
-        while(iter.hasNext()) {
-            Aminoacid current = iter.next();
-            Integer optionCount = Direction.class.getEnumConstants().length;
-            Integer randomNumber = random.nextInt(optionCount);
-            Direction randomDirection = Direction.class.getEnumConstants()[randomNumber];
-            current.nextDirection = randomDirection;
+        for (Aminoacid current : genotype) {
+            int optionCount = Direction.class.getEnumConstants().length;
+            int randomNumber = random.nextInt(optionCount);
+            current.nextDirection = Direction.class.getEnumConstants()[randomNumber];
         }
 
         calculatePositions();
@@ -107,7 +102,11 @@ public class Protein {
         return fitness;
     }
 
-    public class ProteinInfo {
+    public void crossoverWith(Protein other) {
+
+    }
+
+    public static class ProteinInfo {
         protected Integer hhBonds = 0;
         protected Integer overlaps = 0;
 
@@ -119,4 +118,5 @@ public class Protein {
             return overlaps;
         }
     }
+
 }

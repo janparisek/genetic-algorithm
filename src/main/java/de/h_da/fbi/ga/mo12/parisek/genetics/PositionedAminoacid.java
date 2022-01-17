@@ -38,10 +38,7 @@ public class PositionedAminoacid extends Aminoacid {
     Boolean isNeighborsWith(PositionedAminoacid other) {
         Integer distance = getDistanceTo(other);
 
-        if(distance.equals(1)) {
-            return true;
-        }
-        return false;
+        return distance.equals(1);
     }
 
     Boolean isOverlappingWith(PositionedAminoacid other) {

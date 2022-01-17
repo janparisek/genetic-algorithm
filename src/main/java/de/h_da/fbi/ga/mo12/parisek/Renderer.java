@@ -106,7 +106,7 @@ public class Renderer {
     private void saveToDisk(BufferedImage image) {
         String folder = "logs";
         String filename = "candidate.png";
-        if (new File(folder).exists() == false) new File(folder).mkdirs();
+        if (!new File(folder).exists()) { new File(folder).mkdirs(); }
 
         try {
             File f = new File(folder + File.separator + filename);

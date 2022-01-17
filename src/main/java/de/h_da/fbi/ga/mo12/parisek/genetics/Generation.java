@@ -1,16 +1,16 @@
 package de.h_da.fbi.ga.mo12.parisek.genetics;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+
+import de.h_da.fbi.ga.mo12.parisek.WeightedProteinCollection;
 
 public class Generation {
     private List<Protein> candidates = new ArrayList<>();
-    private Integer number = 0;
+    private Integer number = 1;
     private Double averageFitness = 0d;
-    private Double totalFitness = 0d;
     private Protein bestCandidate;
     private final static Integer GENERATION_SIZE = 100;
+    private final static Random rng = new Random();
 
     public Integer getNumber() {
         return number;
@@ -25,39 +25,73 @@ public class Generation {
     }
 
     public Generation(Sequence sequence) {
-        Protein protein = new Protein(sequence);
-        bestCandidate = protein;
-        candidates.add(protein);
-        totalFitness += protein.getFitness();
-
-        for(int i = 1; i < GENERATION_SIZE; ++i) {
-            protein = new Protein(sequence);
+        for(int i = 0; i < GENERATION_SIZE; ++i) {
+            Protein protein = new Protein(sequence);
             candidates.add(protein);
-            totalFitness += protein.getFitness();
+        }
 
-            if(protein.getFitness() > bestCandidate.getFitness()) {
-                bestCandidate = protein;
+        recalculateMetrics();
+
+    }
+
+    private void recalculateMetrics() {
+        bestCandidate = candidates.get(0);
+        Double totalFitness = 0d;
+
+        for(Protein candidate : candidates) {
+            totalFitness += candidate.getFitness();
+
+            if(candidate.getFitness() > bestCandidate.getFitness()) {
+                bestCandidate = candidate;
             }
-
         }
 
         averageFitness = totalFitness / (double) GENERATION_SIZE;
+    }
+
+    public void generateNext(Algorithm algorithm) {
+        ++number;
+        switch (algorithm) {
+            case LAB3:
+                generateNextLab3();
+            case LAB4:
+            default:
+                break;
+        }
+        recalculateMetrics();
+    }
+
+
+    private void generateNextLab3() {
+        final Integer CROSSOVER_COUNT = GENERATION_SIZE;
+
+        // Fitness proportional selection
+        WeightedProteinCollection fpSelector = new WeightedProteinCollection(candidates);
+        candidates = fpSelector.sample(GENERATION_SIZE);
+
+        // 1-point crossovers
+        for(int i = 0; i < CROSSOVER_COUNT; ++i) {
+            Protein candidate1 = getRandomCandidate();
+            Protein candidate2 = getRandomCandidate();
+            if(candidate1.equals(candidate2)) { break; }
+            //candidate1.
+        }
+
+        // Random mutation
 
     }
 
-    public Generation generateNext() {
-        List<Protein> nextCandidates = new ArrayList<>();
-
-        nextCandidates.add()
-
-
-        return null;
+    private Protein getRandomCandidate() {
+        return candidates.get(rng.nextInt(candidates.size()));
     }
 
-    private Double getRandomDouble(Double rangeMin, Double rangeMax) {
-        Random r = new Random();
-        Double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-        return randomValue;
+    public List<Protein> getCandidates() {
+        return candidates;
+    }
+
+    public static enum Algorithm {
+        LAB3,
+        LAB4
     }
 
 }

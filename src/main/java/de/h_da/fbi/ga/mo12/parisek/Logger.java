@@ -1,11 +1,13 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
 import de.h_da.fbi.ga.mo12.parisek.genetics.Generation;
+import de.h_da.fbi.ga.mo12.parisek.genetics.Protein;
 
-import javax.imageio.ImageIO;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 
 public class Logger {
     private final static String folder = "logs";
@@ -13,7 +15,7 @@ public class Logger {
     private final FileOutputStream stream;
 
     public Logger() {
-        if (new File(folder).exists() == false) {
+        if (!new File(folder).exists()) {
             new File(folder).mkdirs();
         }
         File file = new File(folder + File.separator + filename);
@@ -25,6 +27,7 @@ public class Logger {
         } catch (FileNotFoundException e) {
             stream1 = null;
             e.printStackTrace();
+            System.exit(-1);
         }
         stream = stream1;
 
@@ -43,20 +46,31 @@ public class Logger {
         }
     }
 
-    public void log(Generation generation) {
-        StringBuilder line = new StringBuilder()
-            .append(generation.getNumber())
-            .append(",")
-            .append(generation.getAverageFitness())
-            .append(",")
-            .append(generation.getBestCandidate().getFitness())
-            .append(",")
-            .append("NaN")
-            .append(",")
-            .append(generation.getBestCandidate().getProperties().getHhBonds())
-            .append(",")
-            .append(generation.getBestCandidate().getProperties().getOverlaps())
-            .append("\n");
+    public void log(Generation generation, Double peakFitness) {
+        String line = generation.getNumber() +
+            "," +
+            generation.getAverageFitness() +
+            "," +
+            generation.getBestCandidate().getFitness() +
+            "," +
+            peakFitness +
+            "," +
+            generation.getBestCandidate().getProperties().getHhBonds() +
+            "," +
+            generation.getBestCandidate().getProperties().getOverlaps() +
+            "\n";
+        log(line);
+    }
+
+    public void logDebug(Generation generation) {
+        StringBuilder line = new StringBuilder();
+
+        for(Protein one : generation.getCandidates()) {
+            line.append(System.identityHashCode(one));
+            line.append(",");
+        }
+        line.append("\n");
+
         log(line.toString());
     }
 

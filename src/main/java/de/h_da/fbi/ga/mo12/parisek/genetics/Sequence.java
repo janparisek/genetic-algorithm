@@ -7,7 +7,7 @@ public class Sequence {
     private final List<Boolean> sequence;
 
     public Sequence (String sequence) throws Exception {
-        this.sequence = new ArrayList<Boolean>();
+        this.sequence = new ArrayList<>();
 
         // Parse sequence from string
         for (
