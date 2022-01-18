@@ -9,13 +9,13 @@ import java.util.Random;
 public class WeightedProteinCollection {
     private final List<Weight> data = new ArrayList<>();
     private final Random rng = new Random();
-    private Double totalFitness = 0d;
+    private Double accumulatedFitness = 0d;
 
     public WeightedProteinCollection(List<Protein> data) {
 
         for(Protein datum : data) {
-            totalFitness += datum.getFitness();
-            Weight select = new Weight(totalFitness, datum);
+            accumulatedFitness += datum.getFitness();
+            Weight select = new Weight(accumulatedFitness, datum);
             this.data.add(select);
         }
 
@@ -23,15 +23,16 @@ public class WeightedProteinCollection {
 
     public List<Protein> sample(Integer amount) {
         List<Protein> buffer = new ArrayList<>();
+
         for(int i = 0; i < amount; ++i) {
-            buffer.add(sample());
+            buffer.add(new Protein(sample()));
         }
 
         return buffer;
     }
 
     public Protein sample() {
-        Double randomDouble = getRandomDouble(totalFitness);
+        Double randomDouble = getRandomDouble(accumulatedFitness);
 
         for (Weight datum : data) {
             if(randomDouble < datum.cumulativeWeight) {

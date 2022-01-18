@@ -1,6 +1,6 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
-import de.h_da.fbi.ga.mo12.parisek.genetics.Generation;
+import de.h_da.fbi.ga.mo12.parisek.genetics.Population;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Protein;
 
 import java.io.File;
@@ -46,27 +46,27 @@ public class Logger {
         }
     }
 
-    public void log(Generation generation, Double peakFitness) {
-        String line = generation.getNumber() +
+    public void log(Population population, Double peakFitness) {
+        String line = population.getGenerationNumber() +
             "," +
-            generation.getAverageFitness() +
+            population.getAverageFitness() +
             "," +
-            generation.getBestCandidate().getFitness() +
+            population.getBestCandidate().getFitness() +
             "," +
             peakFitness +
             "," +
-            generation.getBestCandidate().getProperties().getHhBonds() +
+            population.getBestCandidate().getProperties().getHhBonds() +
             "," +
-            generation.getBestCandidate().getProperties().getOverlaps() +
+            population.getBestCandidate().getProperties().getOverlaps() +
             "\n";
         log(line);
     }
 
-    public void logDebug(Generation generation) {
+    public void logDebug(Population population, Double discard) {
         StringBuilder line = new StringBuilder();
 
-        for(Protein one : generation.getCandidates()) {
-            line.append(System.identityHashCode(one));
+        for(Protein one : population.getPopulation()) {
+            line.append(one.getFitness());
             line.append(",");
         }
         line.append("\n");

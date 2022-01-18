@@ -1,44 +1,44 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
-import de.h_da.fbi.ga.mo12.parisek.genetics.Generation;
+import de.h_da.fbi.ga.mo12.parisek.genetics.Population;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Protein;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Sequence;
 
-import static de.h_da.fbi.ga.mo12.parisek.genetics.Generation.Algorithm.*;
+import static de.h_da.fbi.ga.mo12.parisek.genetics.Population.Algorithm.*;
 
 public class Main {
     public static void main(final String[] args) {
 
         Sequence sequence = null;
         try {
-            sequence = new Sequence(Examples.SEQ20);
+            sequence = new Sequence(Examples.SEQ50);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        Generation generation = new Generation(sequence);
-
-        /*
-        Renderer r = new Renderer();
-        r.renderProtein(generation.getBestCandidate());
-         */
+        Population population = new Population(sequence);
 
         Logger l = new Logger();
-        Protein peak = generation.getBestCandidate();
-        l.log(generation, peak.getFitness());
+        Protein peak = new Protein(population.getBestCandidate());
+        l.log(population, peak.getFitness());
 
-        final int ITERATIONS = 150;
+        final int ITERATIONS = 10000;
         for(int i = 0; i < ITERATIONS; ++i) {
-            generation.generateNext(LAB3);
+            population.generateNext(LAB3);
 
             // Update peak candidate
-            if(peak.getFitness() < generation.getBestCandidate().getFitness()) {
-                peak = generation.getBestCandidate();
+            if(peak.getFitness() < population.getBestCandidate().getFitness()) {
+                peak = new Protein(population.getBestCandidate());
             }
 
             // Do logging
-            l.log(generation, peak.getFitness());
+            l.log(population, peak.getFitness());
         }
 
-        System.out.println("Done.");
+
+        peak.update();
+        Renderer r = new Renderer();
+        r.renderProtein(peak);
+
+        System.out.println("Done. Peak fitness was " + peak.getFitness());
     }
 }

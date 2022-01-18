@@ -9,10 +9,16 @@ import java.util.Random;
 
 
 public class Protein {
-    protected ArrayList<Aminoacid> genotype;
-    protected ArrayList<PositionedAminoacid> phenotype = null;
-    protected Double fitness = 0d;
-    protected ProteinInfo properties = new ProteinInfo();
+    private ArrayList<Aminoacid> genotype;
+    //private ArrayList<Direction> genotype;    // TODO: this
+    private ArrayList<PositionedAminoacid> phenotype = null;
+    private Double fitness = 0d;
+    private ProteinInfo properties = new ProteinInfo(0, 0);
+    private final static Random rng = new Random();
+
+    public ArrayList<Aminoacid> getGenotype() {
+        return genotype;
+    }
 
     public ProteinInfo getProperties() {
         return properties;
@@ -24,6 +30,24 @@ public class Protein {
 
     public Protein(Sequence sequence) {
         this(sequence, true);
+    }
+
+    public Protein(Protein protein){
+        genotype = new ArrayList<>();
+        for(Aminoacid segment : protein.genotype) {
+            genotype.add(new Aminoacid(segment));
+        }
+        phenotype = new ArrayList<>();
+        for(PositionedAminoacid segment : protein.phenotype) {
+            phenotype.add(new PositionedAminoacid(segment));
+        }
+        fitness = protein.fitness;
+        properties = new ProteinInfo(
+            protein.properties.hhBonds,
+            protein.properties.overlaps
+        );
+
+
     }
 
     public Protein(Sequence sequence, Boolean randomize) {
@@ -38,13 +62,15 @@ public class Protein {
     }
 
     public void foldRandomly() {
-        Random random = new Random();
         for (Aminoacid current : genotype) {
-            int optionCount = Direction.class.getEnumConstants().length;
-            int randomNumber = random.nextInt(optionCount);
-            current.nextDirection = Direction.class.getEnumConstants()[randomNumber];
+            current.randomizeDirection();
         }
 
+        update();
+
+    }
+
+    public void update() {
         calculatePositions();
         calculateFitness();
     }
@@ -103,12 +129,35 @@ public class Protein {
     }
 
     public void crossoverWith(Protein other) {
+        Integer segments = genotype.size();
+        Integer crossoverPoint = rng.nextInt(segments);
+
+
+        ArrayList<Aminoacid> newGenotypeThis = new ArrayList<>();
+        ArrayList<Aminoacid> newGenotypeOther = new ArrayList<>();
+
+        for(int i = 0; i < crossoverPoint; ++i) {
+            newGenotypeThis.add(genotype.get(i));
+            newGenotypeOther.add(other.genotype.get(i));
+        }
+        for(int i = crossoverPoint; i < segments; ++i) {
+            newGenotypeThis.add(other.genotype.get(i));
+            newGenotypeOther.add(genotype.get(i));
+        }
+
+        genotype = newGenotypeThis;
+        other.genotype = newGenotypeOther;
 
     }
 
     public static class ProteinInfo {
         protected Integer hhBonds = 0;
         protected Integer overlaps = 0;
+
+        public ProteinInfo(Integer hhBonds, Integer overlaps) {
+            this.hhBonds = hhBonds;
+            this.overlaps = overlaps;
+        }
 
         public Integer getHhBonds() {
             return hhBonds;
