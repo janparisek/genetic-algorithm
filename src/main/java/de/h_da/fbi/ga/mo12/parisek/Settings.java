@@ -1,8 +1,8 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
 public class Settings {
-    public final static Integer GENERATIONS = 10000;
-    public final static Integer POPULATION_SIZE = 100;
+    public final static Integer GENERATIONS = 1000;
+    public final static Integer POPULATION_SIZE = 1000;
     public final static String SEQUENCE = Examples.SEQ20;
 
     // Lab 3

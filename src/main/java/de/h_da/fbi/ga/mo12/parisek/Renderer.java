@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ListIterator;
 
 public class Renderer {
     private Graphics2D g2 = null;
@@ -55,7 +54,7 @@ public class Renderer {
         for(int i = 0; i < protein.getPhenotype().size(); ++i) {
             // Draw current amino acid
             Aminoacid current = protein.getPhenotype().get(i);
-            drawAminoacid(current.getPosition(), current.getHydrophobic(), String.valueOf(i));
+            drawAminoacid(current.getPosition(), current.isHydrophobic(), String.valueOf(i));
 
             // Attempt to draw connection with next amino acid (if it exists)
             try {

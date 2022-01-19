@@ -1,6 +1,5 @@
 package de.h_da.fbi.ga.mo12.parisek.genetics;
 
-import de.h_da.fbi.ga.mo12.parisek.Direction;
 import de.h_da.fbi.ga.mo12.parisek.Utils;
 import de.h_da.fbi.ga.mo12.parisek.WeightedProteinCollection;
 import java.util.ArrayList;

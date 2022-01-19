@@ -129,8 +129,8 @@ public class Protein {
             if(aminoacid.isOverlappingWith(otherAminoacid)) {
                 ++overlaps;
             } else if (aminoacid.isNeighborsWith(otherAminoacid) &&
-                    aminoacid.getHydrophobic() &&
-                    otherAminoacid.getHydrophobic()
+                    aminoacid.isHydrophobic() &&
+                    otherAminoacid.isHydrophobic()
             ) { ++hhBonds; }
         }
 

@@ -1,13 +1,12 @@
 package de.h_da.fbi.ga.mo12.parisek.genetics;
 
-import de.h_da.fbi.ga.mo12.parisek.Direction;
 import de.h_da.fbi.ga.mo12.parisek.Position;
 
 import static java.lang.Math.abs;
 
 public class Aminoacid {
-    private Position position;
-    private Boolean isHydrophobic;
+    private final Position position;
+    private final Boolean isHydrophobic;
 
     public Aminoacid(Aminoacid that) {
         position = new Position(that.position);
@@ -26,7 +25,7 @@ public class Aminoacid {
     public Position getPosition() {
         return position;
     }
-    public Boolean getHydrophobic() {
+    public Boolean isHydrophobic() {
         return isHydrophobic;
     }
 
