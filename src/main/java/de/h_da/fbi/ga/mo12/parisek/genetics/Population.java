@@ -1,29 +1,19 @@
 package de.h_da.fbi.ga.mo12.parisek.genetics;
 
-import java.util.*;
-
+import de.h_da.fbi.ga.mo12.parisek.Direction;
+import de.h_da.fbi.ga.mo12.parisek.Utils;
 import de.h_da.fbi.ga.mo12.parisek.WeightedProteinCollection;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.h_da.fbi.ga.mo12.parisek.Settings.*;
 
 public class Population {
     private List<Protein> population = new ArrayList<>();
-    private Integer generationNumber = 1;
+    private Integer generationNumber = 0;
     private Double averageFitness = 0d;
     private Protein bestCandidate;
-    private final static Integer POPULATION_SIZE = 1000;
-    private final static Random rng = new Random();
     private final Sequence sequence;
-
-    public Integer getGenerationNumber() {
-        return generationNumber;
-    }
-
-    public Double getAverageFitness() {
-        return averageFitness;
-    }
-
-    public Protein getBestCandidate() {
-        return bestCandidate;
-    }
 
     public Population(Sequence sequence) {
         this.sequence = sequence;
@@ -34,6 +24,87 @@ public class Population {
 
         recalculateMetrics();
 
+    }
+
+    public Integer getGenerationNumber() {
+        return generationNumber;
+    }
+    public Double getAverageFitness() {
+        return averageFitness;
+    }
+    public Protein getBestCandidate() {
+        return bestCandidate;
+    }
+    public List<Protein> getPopulation() {
+        return population;
+    }
+
+    public void generateNext(Algorithm algorithm) {
+        ++generationNumber;
+
+        if((generationNumber % 100) == 0) {
+            System.out.println("Creating generation " + generationNumber);
+        }
+
+        switch (algorithm) {
+            case LAB3:
+                generateNextLab3();
+            case LAB4:
+            default:
+                generateNextLab3();
+        }
+
+        recalculateMetrics();
+    }
+
+    private void reconstructPhenotypes() {
+        for(Protein candidate : population) {
+            candidate.reconstructPhenotype();
+        }
+    }
+
+    private void generateNextLab3() {
+        final Integer MUTATION_COUNT = MUTATION_RATE * sequence.getSequence().size();
+
+        doFitnessProportionalSelection();
+        doSingleCrossoversRandomlyDistributed(CROSSOVER_COUNT);
+        doMutationsRandomlyDistributed(MUTATION_COUNT);
+
+        reconstructPhenotypes();
+
+    }
+
+    private void doMutationsRandomlyDistributed(Integer iterations) {
+        for(int i = 0; i < iterations; ++i) {
+            doSingleMutationOnRandomCandidate();
+        }
+    }
+
+    private void doSingleMutationOnRandomCandidate() {
+        Protein candidate = selectRandomCandidate();
+        Integer randomGeneIndex = Utils.getRandomInt(candidate.getGenotype().size());
+        candidate.mutateAt(randomGeneIndex);
+    }
+
+    private void doSingleCrossoversRandomlyDistributed(Integer iterations) {
+        // 1-point crossovers
+        for(int i = 0; i < iterations; ++i) {
+            Protein candidate1 = selectRandomCandidate();
+            Protein candidate2 = selectRandomCandidate();
+            if(candidate1.equals(candidate2)) { break; }
+            candidate1.crossoverWith(candidate2);
+        }
+    }
+
+    private void doFitnessProportionalSelection() {
+        // Fitness proportional selection
+        // TODO: Refactor everything in here
+        WeightedProteinCollection fpSelector = new WeightedProteinCollection(population);
+        population = fpSelector.sample(POPULATION_SIZE);
+    }
+
+    private Protein selectRandomCandidate() {
+        return population.get(Utils.getRandomInt(population.size()));
     }
 
     private void recalculateMetrics() {
@@ -51,93 +122,7 @@ public class Population {
         averageFitness = totalFitness / (double) POPULATION_SIZE;
     }
 
-    public void generateNext(Algorithm algorithm) {
-        ++generationNumber;
-
-        if((generationNumber % 100) == 1) {
-            System.out.println("Creating generation " + generationNumber);
-        }
-
-        switch (algorithm) {
-            case LAB3:
-                generateNextLab3();
-            case LAB4:
-            default:
-                break;
-        }
-        recalculateMetrics();
-    }
-
-
-    private void generateNextLab3() {
-
-        final Integer CROSSOVER_COUNT = POPULATION_SIZE / 8;//125;
-        final Integer MUTATION_COUNT = POPULATION_SIZE * sequence.getSequence().size() / 800; //20 => 20
-        //final Integer MUTATIONS_PER_CANDIDATE = 2;
-
-        doFitnessProportionalSelection();
-
-        doSinglepointCrossoversRandomlyDistributed(CROSSOVER_COUNT);
-
-        // Random mutation
-        //doMutationsForEach(MUTATIONS_PER_CANDIDATE);
-        doMutationsRandomlyDistributed(MUTATION_COUNT);
-        //doSingleMutationOnRandomCandidate();
-
-        for(Protein candidate : population) {
-            candidate.update();
-        }
-
-    }
-
-    private void doMutationsForEach(Integer iterationsPerCandidate) {
-        for(Protein candidate : population) {
-            for(int i = 0; i < iterationsPerCandidate; ++i){
-                Integer segment = rng.nextInt(candidate.getGenotype().size());
-                Aminoacid mutateMe = candidate.getGenotype().get(segment);
-                mutateMe.randomizeDirection();
-            }
-        }
-    }
-
-    private void doMutationsRandomlyDistributed(Integer iterations) {
-        for(int i = 0; i < iterations; ++i) {
-            doSingleMutationOnRandomCandidate();
-        }
-    }
-
-    private void doSingleMutationOnRandomCandidate() {
-        Protein candidate = getRandomCandidate();
-        Integer segment = rng.nextInt(candidate.getGenotype().size());
-        Aminoacid mutateMe = candidate.getGenotype().get(segment);
-        mutateMe.randomizeDirection();
-    }
-
-    private void doSinglepointCrossoversRandomlyDistributed(Integer iterations) {
-        // 1-point crossovers
-        for(int i = 0; i < iterations; ++i) {
-            Protein candidate1 = getRandomCandidate();
-            Protein candidate2 = getRandomCandidate();
-            if(candidate1.equals(candidate2)) { break; }
-            candidate1.crossoverWith(candidate2);
-        }
-    }
-
-    private void doFitnessProportionalSelection() {
-        // Fitness proportional selection
-        WeightedProteinCollection fpSelector = new WeightedProteinCollection(population);
-        population = fpSelector.sample(POPULATION_SIZE);
-    }
-
-    private Protein getRandomCandidate() {
-        return population.get(rng.nextInt(population.size()));
-    }
-
-    public List<Protein> getPopulation() {
-        return population;
-    }
-
-    public static enum Algorithm {
+    public enum Algorithm {
         LAB3,
         LAB4
     }

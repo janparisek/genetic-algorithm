@@ -1,6 +1,6 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
-import de.h_da.fbi.ga.mo12.parisek.genetics.PositionedAminoacid;
+import de.h_da.fbi.ga.mo12.parisek.genetics.Aminoacid;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Protein;
 
 import javax.imageio.ImageIO;
@@ -40,8 +40,8 @@ public class Renderer {
 
     private void renderProteinData(Protein protein) {
         String a = "Fitness: " + protein.getFitness();
-        String b = "Hp Bonds: " + protein.getProperties().getHhBonds();
-        String c = "Overlaps: " + protein.getProperties().getOverlaps();
+        String b = "Hp Bonds: " + protein.getHhBonds();
+        String c = "Overlaps: " + protein.getOverlaps();
 
         g2.setColor(Color.BLACK);
         g2.drawString(a, 0, 10);
@@ -51,25 +51,24 @@ public class Renderer {
 
 
     private void renderProteinSequence(Protein protein) {
-        ListIterator<PositionedAminoacid> iter = protein.getPhenotype().listIterator();
 
-        while(iter.hasNext()) {
-            PositionedAminoacid current = iter.next();
-            drawAminoacid(current.getPosition(), current.isHydrophobic, String.valueOf(iter.nextIndex()));
+        for(int i = 0; i < protein.getPhenotype().size(); ++i) {
+            // Draw current amino acid
+            Aminoacid current = protein.getPhenotype().get(i);
+            drawAminoacid(current.getPosition(), current.getHydrophobic(), String.valueOf(i));
 
-            // Look ahead
-            if(iter.hasNext()) {
-                drawConnection(current.getPosition(), current.getNextDirection());
-            }
+            // Attempt to draw connection with next amino acid (if it exists)
+            try {
+                Aminoacid next = protein.getPhenotype().get(i + 1);
+                drawConnection(current.getPosition(), next.getPosition());
+            } catch (IndexOutOfBoundsException ignored) {}
 
         }
 
     }
 
 
-    private void drawConnection(Position origin, Direction direction) {
-        Position destination = new Position(origin);
-        destination.move(direction);
+    private void drawConnection(Position origin, Position destination) {
 
         Position imageOrigin = new Position(
             IMAGE_CENTER_X + (origin.x * GRID_SIZE),

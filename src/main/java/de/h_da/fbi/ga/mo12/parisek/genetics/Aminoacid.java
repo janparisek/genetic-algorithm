@@ -1,34 +1,76 @@
 package de.h_da.fbi.ga.mo12.parisek.genetics;
 
 import de.h_da.fbi.ga.mo12.parisek.Direction;
+import de.h_da.fbi.ga.mo12.parisek.Position;
 
-import java.util.Random;
+import static java.lang.Math.abs;
 
 public class Aminoacid {
-    public Boolean isHydrophobic = null;
-    public Direction nextDirection = Direction.EAST;
-    public final static Random rng = new Random();
+    private Position position;
+    private Boolean isHydrophobic;
 
-    Aminoacid(Boolean isHydrophobic) {
+    public Aminoacid(Aminoacid that) {
+        position = new Position(that.position);
+        isHydrophobic = that.isHydrophobic;
+    }
+    /**
+     * Creates a new amino acid at the provided coordinates.
+     * @param position The coordinates this amino acid is to be placed at.
+     * @param isHydrophobic Whether this amino acid is hydrophobic.
+     */
+    public Aminoacid(Position position, Boolean isHydrophobic) {
+        this.position = new Position(position);
         this.isHydrophobic = isHydrophobic;
     }
 
-    public Aminoacid(Boolean isHydrophobic, Direction direction) {
-        this(isHydrophobic);
-        nextDirection = direction;
+    public Position getPosition() {
+        return position;
+    }
+    public Boolean getHydrophobic() {
+        return isHydrophobic;
     }
 
-    Aminoacid(Aminoacid aminoacid) {
-        this(aminoacid.isHydrophobic, aminoacid.nextDirection);
+    /**
+     * Calculates the two-dimensional offset between two amino acids.
+     * @param other The amino acid to compare to.
+     * @return The offset.
+     */
+    public Position calculateOffset(Aminoacid other) {
+        Position delta = new Position();
+        delta.x = position.x - other.position.x;
+        delta.y = position.y - other.position.y;
+
+        return delta;
     }
 
-    public Direction getNextDirection() {
-        return nextDirection;
+    /**
+     * Calculates the Manhattan distance between two amino acids.
+     * @param other The amino acid to compare to.
+     * @return The Manhattan distance.
+     */
+    public Integer getDistanceTo(Aminoacid other) {
+        Position delta = calculateOffset(other);
+        return abs(delta.x) + abs(delta.y);
     }
 
-    public void randomizeDirection() {
-        int optionCount = Direction.class.getEnumConstants().length;
-        int randomNumber = rng.nextInt(optionCount);
-        nextDirection = Direction.class.getEnumConstants()[randomNumber];
+    /**
+     * Determines if this amino acid is right next to another amino acid.
+     * @param other The amino acid to check for.
+     * @return Whether this amino acid is right next to another amino acid.
+     */
+    public Boolean isNeighborsWith(Aminoacid other) {
+        Integer distance = getDistanceTo(other);
+        return distance.equals(1);
     }
+
+    /**
+     * Determines if this amino acid shares a spot with another amino acid.
+     * @param other The amino acid to check for.
+     * @return Whether this amino acid shares a spot with another amino acid.
+     */
+    public Boolean isOverlappingWith(Aminoacid other) {
+        return position.equals(other.position);
+    }
+
+
 }

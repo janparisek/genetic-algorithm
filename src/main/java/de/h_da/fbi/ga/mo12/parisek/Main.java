@@ -11,9 +11,10 @@ public class Main {
 
         Sequence sequence = null;
         try {
-            sequence = new Sequence(Examples.SEQ50);
+            sequence = new Sequence(Settings.SEQUENCE);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Provided genetic sequence was invalid.");
+            System.exit(1);
         }
         Population population = new Population(sequence);
 
@@ -21,8 +22,7 @@ public class Main {
         Protein peak = new Protein(population.getBestCandidate());
         l.log(population, peak.getFitness());
 
-        final int ITERATIONS = 10000;
-        for(int i = 0; i < ITERATIONS; ++i) {
+        for(int i = 0; i < Settings.GENERATIONS; ++i) {
             population.generateNext(LAB3);
 
             // Update peak candidate
@@ -35,7 +35,7 @@ public class Main {
         }
 
 
-        peak.update();
+        peak.reconstructPhenotype(); // TODO: Shouldn't need to be called
         Renderer r = new Renderer();
         r.renderProtein(peak);
 

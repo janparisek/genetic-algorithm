@@ -2,170 +2,175 @@ package de.h_da.fbi.ga.mo12.parisek.genetics;
 
 import de.h_da.fbi.ga.mo12.parisek.Direction;
 import de.h_da.fbi.ga.mo12.parisek.Position;
+import de.h_da.fbi.ga.mo12.parisek.Utils;
 
 import java.util.ArrayList;
-import java.util.ListIterator;
-import java.util.Random;
-
 
 public class Protein {
-    private ArrayList<Aminoacid> genotype;
-    //private ArrayList<Direction> genotype;    // TODO: this
-    private ArrayList<PositionedAminoacid> phenotype = null;
+    private ArrayList<Direction.Local> genotype;
+    private ArrayList<Aminoacid> phenotype = null;
     private Double fitness = 0d;
-    private ProteinInfo properties = new ProteinInfo(0, 0);
-    private final static Random rng = new Random();
+    private Integer hhBonds = 0;
+    private Integer overlaps = 0;
+    private final Sequence sequence;
 
-    public ArrayList<Aminoacid> getGenotype() {
-        return genotype;
+    public Protein(Protein that){
+        genotype = new ArrayList<>(that.genotype);
+        phenotype = new ArrayList<>();
+        for(var segment : that.phenotype) {
+            phenotype.add(new Aminoacid(segment));
+        }
+        fitness = that.fitness;
+        hhBonds = that.hhBonds;
+        overlaps = that.overlaps;
+        sequence = that.sequence;
     }
-
-    public ProteinInfo getProperties() {
-        return properties;
-    }
-
-    public ArrayList<PositionedAminoacid> getPhenotype() {
-        return phenotype;
-    }
-
+    /**
+     * Creates a new, randomly folded protein with the provided sequence.
+     * @param sequence The sequence to use.
+     */
     public Protein(Sequence sequence) {
         this(sequence, true);
     }
-
-    public Protein(Protein protein){
-        genotype = new ArrayList<>();
-        for(Aminoacid segment : protein.genotype) {
-            genotype.add(new Aminoacid(segment));
-        }
-        phenotype = new ArrayList<>();
-        for(PositionedAminoacid segment : protein.phenotype) {
-            phenotype.add(new PositionedAminoacid(segment));
-        }
-        fitness = protein.fitness;
-        properties = new ProteinInfo(
-            protein.properties.hhBonds,
-            protein.properties.overlaps
-        );
-
-
-    }
-
+    /**
+     * Creates a new protein with the provided sequence.
+     * @param sequence The sequence to use.
+     * @param randomize Whether to randomly fold the protein.
+     */
     public Protein(Sequence sequence, Boolean randomize) {
         // Parse sequence
-        genotype = new ArrayList<>();
-        for (Boolean aBoolean : sequence.getSequence()) {
-            Aminoacid current = new Aminoacid(aBoolean, Direction.EAST);
-            genotype.add(current);
-        }
-
+        this.sequence = sequence;
         if(randomize) { foldRandomly(); }
     }
 
-    public void foldRandomly() {
-        for (Aminoacid current : genotype) {
-            current.randomizeDirection();
-        }
-
-        update();
-
+    public ArrayList<Direction.Local> getGenotype() {
+        return genotype;
     }
-
-    public void update() {
-        calculatePositions();
-        calculateFitness();
+    public ArrayList<Aminoacid> getPhenotype() {
+        return phenotype;
     }
-
-    private void calculatePositions() {
-        phenotype = new ArrayList<>();
-        Position cursor = new Position(0, 0);
-
-        for(Aminoacid element : genotype) {
-            PositionedAminoacid aminoacid = new PositionedAminoacid(element, cursor);
-            phenotype.add(aminoacid);
-            cursor.move(element.getNextDirection());
-        }
-    }
-
-    private void calculateFitness() {
-        fitness = 0d;
-        properties.hhBonds = 0;
-        properties.overlaps = 0;
-
-        ListIterator<PositionedAminoacid> iter = phenotype.listIterator();
-        while(iter.hasNext()) {
-            compareWithRemaining(iter);
-        }
-
-        fitness = (double) properties.hhBonds / (double) (1 + properties.overlaps);
-    }
-
-    private void compareWithRemaining(ListIterator<PositionedAminoacid> iter) {
-        ListIterator<PositionedAminoacid> accumulator = phenotype.listIterator(iter.nextIndex());
-        PositionedAminoacid current = iter.next();
-
-        // Skip next (one) amino acid
-        if(accumulator.hasNext()) { accumulator.next(); } else { return; }
-
-        // Count
-        while(accumulator.hasNext()) {
-            PositionedAminoacid other = accumulator.next();
-
-            if(current.isOverlappingWith(other)) {
-                // 0 apart
-                ++properties.overlaps;
-            } else if(current.isNeighborsWith(other) && current.isHydrophobic && other.isHydrophobic) {
-                // 1 apart
-                ++properties.hhBonds;
-            } /*else {
-
-            }*/
-
-
-        }
-    }
-
     public Double getFitness() {
         return fitness;
     }
+    public Integer getHhBonds() {
+        return hhBonds;
+    }
+    public Integer getOverlaps() {
+        return overlaps;
+    }
 
-    public void crossoverWith(Protein other) {
-        Integer segments = genotype.size();
-        Integer crossoverPoint = rng.nextInt(segments);
-
-
-        ArrayList<Aminoacid> newGenotypeThis = new ArrayList<>();
-        ArrayList<Aminoacid> newGenotypeOther = new ArrayList<>();
-
-        for(int i = 0; i < crossoverPoint; ++i) {
-            newGenotypeThis.add(genotype.get(i));
-            newGenotypeOther.add(other.genotype.get(i));
+    /**
+     * Randomly generates a new genotype sequence.
+     */
+    public void foldRandomly() {
+        genotype = new ArrayList<>();
+        Integer genotypeSize = sequence.getSequence().size() - 1;
+        for(int i = 0; i < genotypeSize; ++i) {
+            genotype.add(Direction.Local.getRandom());
         }
-        for(int i = crossoverPoint; i < segments; ++i) {
-            newGenotypeThis.add(other.genotype.get(i));
-            newGenotypeOther.add(genotype.get(i));
-        }
 
-        genotype = newGenotypeThis;
-        other.genotype = newGenotypeOther;
+        reconstructPhenotype();
 
     }
 
-    public static class ProteinInfo {
-        protected Integer hhBonds = 0;
-        protected Integer overlaps = 0;
+    /**
+     * Forces the recalculation of the phenotype of this protein.
+     */
+    public void reconstructPhenotype() {
+        phenotype = new ArrayList<>();
+        Position cursorPosition = new Position(0, 0);
+        Direction.Global cursorRotation = Direction.Global.EAST;
 
-        public ProteinInfo(Integer hhBonds, Integer overlaps) {
-            this.hhBonds = hhBonds;
-            this.overlaps = overlaps;
+        for(int i = 0; i < sequence.getSequence().size(); ++i) {
+            Boolean isHydrophobic = sequence.getSequence().get(i);
+            Aminoacid aminoacid = new Aminoacid(cursorPosition, isHydrophobic);
+            phenotype.add(aminoacid);
+
+            try {
+                Direction.Local gene = genotype.get(i);
+                cursorRotation = Direction.Global.turn(cursorRotation, gene);
+                cursorPosition.move(cursorRotation);
+            } catch (IndexOutOfBoundsException ignored) {}
         }
 
-        public Integer getHhBonds() {
-            return hhBonds;
+        recalculateStatistics();
+
+    }
+
+    /**
+     * Forces the recalculation of the statistics (fitness, hhBonds, overlaps) of this protein.
+     */
+    private void recalculateStatistics() {
+        fitness = 0d;
+        hhBonds = 0;
+        overlaps = 0;
+
+        for(int i = 0; i < phenotype.size(); ++i) {
+            compareAminosWithRest(i);
         }
 
-        public Integer getOverlaps() {
-            return overlaps;
+        fitness = (double) hhBonds / (double) (1 + overlaps);
+    }
+
+    /**
+     * Compares the amino acid at the provided index with all remaining amino acids in the phenotype.
+     * @param aminoacidIndex The index of the amino acid to compare with.
+     */
+    private void compareAminosWithRest(Integer aminoacidIndex) {
+        Aminoacid aminoacid = phenotype.get(aminoacidIndex);
+        int otherAminoacidIndex = aminoacidIndex;
+
+        // Skip next (one) amino acid
+        otherAminoacidIndex += 2;
+
+        // Count statistics
+        for( ; otherAminoacidIndex < phenotype.size(); ++otherAminoacidIndex) {
+            Aminoacid otherAminoacid = phenotype.get(otherAminoacidIndex);
+            if(aminoacid.isOverlappingWith(otherAminoacid)) {
+                ++overlaps;
+            } else if (aminoacid.isNeighborsWith(otherAminoacid) &&
+                    aminoacid.getHydrophobic() &&
+                    otherAminoacid.getHydrophobic()
+            ) { ++hhBonds; }
         }
+
+    }
+
+    /**
+     * Does a crossover at a random point in the genotype between this protein and another provided protein.
+     * @param other The protein to do the crossover with.
+     */
+    public void crossoverWith(Protein other) {
+        int crossoverPoint = Utils.getRandomInt(genotype.size());
+
+        ArrayList<Direction.Local> thisNewGenotype = new ArrayList<>();
+        ArrayList<Direction.Local> otherNewGenotype = new ArrayList<>();
+
+        for(int i = 0; i < crossoverPoint; ++i) {
+            thisNewGenotype.add(genotype.get(i));
+            otherNewGenotype.add(other.genotype.get(i));
+        }
+        for(int i = crossoverPoint; i < genotype.size(); ++i) {
+            thisNewGenotype.add(other.genotype.get(i));
+            otherNewGenotype.add(genotype.get(i));
+        }
+
+        genotype = thisNewGenotype;
+        other.genotype = otherNewGenotype;
+
+        //recalculatePositions();
+        //other.recalculatePositions();
+
+    }
+
+    /**
+     * Mutates a gene at the provided point in the genotype.
+     * @param index The index of the point to mutate at.
+     */
+    public void mutateAt(Integer index) {
+        Direction.Local mutatedGene = genotype.get(index);
+        mutatedGene = Direction.Local.getRandomNot(mutatedGene);
+        genotype.set(index, mutatedGene);
     }
 
 }

@@ -26,8 +26,8 @@ public class Logger {
             stream1 = new FileOutputStream(file);
         } catch (FileNotFoundException e) {
             stream1 = null;
-            e.printStackTrace();
-            System.exit(-1);
+            System.err.println("Could not open file " + file.getAbsolutePath());
+            System.exit(2);
         }
         stream = stream1;
 
@@ -55,9 +55,9 @@ public class Logger {
             "," +
             peakFitness +
             "," +
-            population.getBestCandidate().getProperties().getHhBonds() +
+            population.getBestCandidate().getHhBonds() +
             "," +
-            population.getBestCandidate().getProperties().getOverlaps() +
+            population.getBestCandidate().getOverlaps() +
             "\n";
         log(line);
     }

@@ -18,20 +18,12 @@ public class Position {
         this.y = y;
     }
 
-    public void move(Direction direction) {
+    public void move(Direction.Global direction) {
         switch (direction) {
-            case NORTH:
-                y -= 1;
-                break;
-            case SOUTH:
-                y += 1;
-                break;
-            case EAST:
-                x += 1;
-                break;
-            case WEST:
-                x -=1 ;
-                break;
+            case NORTH: --y; break;
+            case SOUTH: ++y; break;
+            case EAST: ++x; break;
+            case WEST: --x; break;
         }
     }
 
@@ -47,4 +39,5 @@ public class Position {
     public int hashCode() {
         return Objects.hash(x, y);
     }
+
 }
