@@ -34,8 +34,7 @@ public class Main {
             l.log(population, peak.getFitness());
         }
 
-
-        peak.reconstructPhenotype(); // TODO: Shouldn't need to be called
+        // Show best candidate
         Renderer r = new Renderer();
         r.renderProtein(peak);
 
