@@ -9,8 +9,12 @@ Jan Parisek (734059)
 ## Results
 Reference specs: i7-4790K, DDR3-1600 memory
 
+### Average results
+Usually above 30.
+Around 7-8 seconds.
+
 ### Best run
-The following candidate was achieved within 22 seconds.
+The following candidate was achieved within 7.6 seconds.
 
 ![](docs/best/candidate.png)
 *Rendering of the best candidate.*
