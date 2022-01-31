@@ -20,7 +20,8 @@ All candidates were achieved with the following settings:
 * 2000 generations
 * 1000 candidates
 * Sequence `SEQ60`
-* 
+* 1.25 mutation base rate
+* 125 Crossover operations per generation
 * Tournament selection
   * 10 candidates per tournament
 * Intra-generational genetic diversity dynamic mutation modifier
@@ -102,3 +103,9 @@ All classes were constructed to be as lightweight as possible. The less there is
 ## Takeaway
 ### Multithreading
 Further optimization may be made by using workers. This can be achieved by passing the fitness evaluation of `Protein`s into various threads.
+
+### Mutation base rate
+This part of the code needs improvement, since it's a bit messy.
+
+### Comments
+Yeah, it should be readable.
