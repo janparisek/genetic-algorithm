@@ -5,6 +5,7 @@ import de.h_da.fbi.ga.mo12.parisek.Utils;
 import de.h_da.fbi.ga.mo12.parisek.WeightedCollection;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 import static de.h_da.fbi.ga.mo12.parisek.Settings.*;
 import static java.lang.Math.abs;
@@ -17,6 +18,8 @@ public class Population {
     private final Sequence SEQUENCE;
     private final Queue<Double> fitnessHistory = new LinkedList<>();
     private Integer mutationCount = 0;
+    private final Integer threadCount = Runtime.getRuntime().availableProcessors();
+    private ExecutorService threadPool = Executors.newFixedThreadPool(threadCount);
 
     public Population(Sequence sequence) {
         this.SEQUENCE = sequence;
@@ -301,6 +304,10 @@ public class Population {
         }
 
         averageFitness = totalFitness / (double) POPULATION_SIZE;
+    }
+
+    public void close() {
+        threadPool.shutdown();
     }
 
     public enum SelectionAlgorithm {
