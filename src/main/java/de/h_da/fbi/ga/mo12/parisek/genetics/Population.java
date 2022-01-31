@@ -95,7 +95,7 @@ public class Population {
         Double mutationRate = MUTATION_BASE_RATE * SEQUENCE.getSequence().size();
         Double diversity = calculateDiversity();
         mutationRate *= diversity;
-        System.out.println("Mutation count in generation " + generationNumber + ": " + mutationRate);
+        //System.out.println("Mutation count in generation " + generationNumber + ": " + mutationRate);
         mutationCount = mutationRate.intValue();
         return mutationRate;
     }
