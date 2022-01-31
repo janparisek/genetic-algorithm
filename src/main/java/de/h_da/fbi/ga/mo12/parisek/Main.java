@@ -32,6 +32,7 @@ public class Main {
             // Do logging
             l.log(population, peak.getFitness());
         }
+        population.close();
 
         // Show best candidate
         Renderer r = new Renderer();

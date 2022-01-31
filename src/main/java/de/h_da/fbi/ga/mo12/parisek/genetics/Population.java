@@ -67,9 +67,14 @@ public class Population {
     }
 
     private void reconstructPhenotypes() {
-        for(Protein candidate : population) {
-            candidate.reconstructPhenotype();
+        try {
+            threadPool.invokeAll(population);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(3);
         }
+
+        //threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     }
 
     private void generateNextLab3() {

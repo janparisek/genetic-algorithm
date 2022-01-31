@@ -42,10 +42,10 @@ AVG: 17m 51s 028ms
 
 ### Callable thread pool
 * 493.838s
-* 2
-* 3
+* 489.762s
+* 480.221s
 
-AVG: 
+AVG: 8m 07s 940ms
 
 ### Runnable thread pool
 * 1
