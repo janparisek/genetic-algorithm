@@ -5,8 +5,9 @@ import de.h_da.fbi.ga.mo12.parisek.Position;
 import de.h_da.fbi.ga.mo12.parisek.Utils;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
-public class Protein {
+public class Protein implements Callable<Boolean> {
     private ArrayList<Direction.Local> genotype;
     private ArrayList<Aminoacid> phenotype = null;
     private Double fitness = 0d;
@@ -185,4 +186,9 @@ public class Protein {
         genotype.set(index, mutatedGene);
     }
 
+    @Override
+    public Boolean call() throws Exception {
+        reconstructPhenotype();
+        return null;
+    }
 }
