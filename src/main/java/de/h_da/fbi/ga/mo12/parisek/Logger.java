@@ -32,7 +32,7 @@ public class Logger {
         stream = stream1;
 
         try {
-            stream.write("Generation,Avg. fitness,Best fitness,Peak fitness,Hp contacts,Overlaps\n".getBytes(StandardCharsets.UTF_8));
+            stream.write("Generation,Avg. fitness,Best fitness,Peak fitness,Hp contacts,Overlaps,Mutation rate\n".getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -58,11 +58,13 @@ public class Logger {
             population.getBestCandidate().getHhBonds() +
             "," +
             population.getBestCandidate().getOverlaps() +
+            "," +
+            population.getMutationCount() +
             "\n";
         log(line);
     }
 
-    public void logDebug(Population population, Double discard) {
+    public void logDebug(Population population) {
         StringBuilder line = new StringBuilder();
 
         for(Protein one : population.getPopulation()) {

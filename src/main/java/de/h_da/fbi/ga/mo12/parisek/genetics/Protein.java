@@ -17,7 +17,7 @@ public class Protein {
     public Protein(Protein that){
         genotype = new ArrayList<>(that.genotype);
         phenotype = new ArrayList<>();
-        for(var segment : that.phenotype) {
+        for(Aminoacid segment : that.phenotype) {
             phenotype.add(new Aminoacid(segment));
         }
         fitness = that.fitness;
@@ -81,17 +81,21 @@ public class Protein {
         Position cursorPosition = new Position(0, 0);
         Direction.Global cursorRotation = Direction.Global.EAST;
 
-        for(int i = 0; i < sequence.getSequence().size(); ++i) {
+        // Do for all elements except last in sequence
+        for(int i = 0; i < (sequence.getSequence().size() - 1); ++i) {
             Boolean isHydrophobic = sequence.getSequence().get(i);
             Aminoacid aminoacid = new Aminoacid(cursorPosition, isHydrophobic);
             phenotype.add(aminoacid);
 
-            try {
-                Direction.Local gene = genotype.get(i);
-                cursorRotation = Direction.Global.turn(cursorRotation, gene);
-                cursorPosition.move(cursorRotation);
-            } catch (IndexOutOfBoundsException ignored) {}
+            Direction.Local gene = genotype.get(i);
+            cursorRotation = Direction.Global.turn(cursorRotation, gene);
+            cursorPosition.move(cursorRotation);
         }
+
+        // Last element in sequence
+        Boolean isHydrophobic = sequence.getSequence().get(sequence.getSequence().size() - 1);
+        Aminoacid aminoacid = new Aminoacid(cursorPosition, isHydrophobic);
+        phenotype.add(aminoacid);
 
         recalculateStatistics();
 
@@ -106,7 +110,7 @@ public class Protein {
         overlaps = 0;
 
         for(int i = 0; i < phenotype.size(); ++i) {
-            compareAminosWithRest(i);
+            compareAminoacidsWithRest(i);
         }
 
         fitness = (double) hhBonds / (double) (1 + overlaps);
@@ -116,7 +120,7 @@ public class Protein {
      * Compares the amino acid at the provided index with all remaining amino acids in the phenotype.
      * @param aminoacidIndex The index of the amino acid to compare with.
      */
-    private void compareAminosWithRest(Integer aminoacidIndex) {
+    private void compareAminoacidsWithRest(Integer aminoacidIndex) {
         Aminoacid aminoacid = phenotype.get(aminoacidIndex);
         int otherAminoacidIndex = aminoacidIndex;
 
@@ -126,12 +130,20 @@ public class Protein {
         // Count statistics
         for( ; otherAminoacidIndex < phenotype.size(); ++otherAminoacidIndex) {
             Aminoacid otherAminoacid = phenotype.get(otherAminoacidIndex);
-            if(aminoacid.isOverlappingWith(otherAminoacid)) {
+            Integer distance = aminoacid.getDistanceTo(otherAminoacid);
+            if(distance > 2) {
+                // Amino acids are too far apart for them to connect next turn. Skip unnecessary checks.
+                otherAminoacidIndex += (distance - 2);
+            } else if (distance.equals(0)) {
+                // Amino acids are 0 apart, which means they're overlapping.
                 ++overlaps;
-            } else if (aminoacid.isNeighborsWith(otherAminoacid) &&
+            } else if (distance.equals(1) &&
                     aminoacid.isHydrophobic() &&
                     otherAminoacid.isHydrophobic()
-            ) { ++hhBonds; }
+            ) {
+                // Amino acids are 1 apart, which means they're neighbors
+                ++hhBonds;
+            }
         }
 
     }

@@ -12,7 +12,7 @@ public class Sequence {
         // Parse sequence from string
         for ( Character s : sequence.toCharArray() ) {
 
-            Boolean isHydrophobic = null;
+            boolean isHydrophobic;
             if(s.equals('0')) {
                 isHydrophobic = false;
             } else if (s.equals('1')) {
@@ -29,6 +29,5 @@ public class Sequence {
     public List<Boolean> getSequence() {
         return sequence;
     }
-
 
 }

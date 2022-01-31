@@ -4,10 +4,9 @@ import de.h_da.fbi.ga.mo12.parisek.genetics.Population;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Protein;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Sequence;
 
-import static de.h_da.fbi.ga.mo12.parisek.genetics.Population.Algorithm.*;
-
 public class Main {
     public static void main(final String[] args) {
+        long before = System.nanoTime();
 
         Sequence sequence = null;
         try {
@@ -23,7 +22,7 @@ public class Main {
         l.log(population, peak.getFitness());
 
         for(int i = 0; i < Settings.GENERATIONS; ++i) {
-            population.generateNext(LAB3);
+            population.generateNext();
 
             // Update peak candidate
             if(peak.getFitness() < population.getBestCandidate().getFitness()) {
@@ -39,5 +38,10 @@ public class Main {
         r.renderProtein(peak);
 
         System.out.println("Done. Peak fitness was " + peak.getFitness());
+
+
+        long after = System.nanoTime();
+        long durationMs = (after - before)/1_000_000;
+        System.out.println(durationMs);
     }
 }

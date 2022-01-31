@@ -1,10 +1,7 @@
 package de.h_da.fbi.ga.mo12.parisek;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static de.h_da.fbi.ga.mo12.parisek.Direction.Global.*;
 
 public class Direction {
 
@@ -89,6 +86,5 @@ public class Direction {
         }
 
     }
-
 
 }

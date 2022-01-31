@@ -51,7 +51,7 @@ public class Renderer {
 
     private void renderProteinSequence(Protein protein) {
 
-        for(int i = 0; i < protein.getPhenotype().size(); ++i) {
+        for(int i = 0; i < protein.getPhenotype().size() ; ++i) {
             // Draw current amino acid
             Aminoacid current = protein.getPhenotype().get(i);
             drawAminoacid(current.getPosition(), current.isHydrophobic(), String.valueOf(i));
