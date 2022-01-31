@@ -74,7 +74,6 @@ public class Population {
             System.exit(3);
         }
 
-        //threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     }
 
     private void generateNextLab3() {
