@@ -6,20 +6,17 @@ import java.util.Random;
 public class Utils {
     private final static Random rng = new Random();
 
-    public static Integer getRandomInt(Integer boundary) {
-        if(boundary == null) {
-            return rng.nextInt();
-        } else {
-            return rng.nextInt(boundary);
-        }
+
+    public static int getRandomInt(int boundary) {
+        return rng.nextInt(boundary);
     }
 
-    public static Double getRandomDouble(Double boundary) {
-        if(boundary == null) {
-            return rng.nextDouble();
-        } else {
-            return rng.nextDouble() * boundary;
-        }
+    public static double getRandomDouble() {
+        return rng.nextDouble();
+    }
+
+    public static double getRandomDouble(double boundary) {
+        return rng.nextDouble() * boundary;
     }
 
     public static <T> T getRandomListElement(List<T> list) {
