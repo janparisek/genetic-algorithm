@@ -3,6 +3,7 @@ package de.h_da.fbi.ga.mo12.parisek.genetics;
 import de.h_da.fbi.ga.mo12.parisek.Direction;
 import de.h_da.fbi.ga.mo12.parisek.Utils;
 import de.h_da.fbi.ga.mo12.parisek.WeightedCollection;
+import de.h_da.fbi.ga.mo12.parisek.tasks.GeneDiversityTask;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -164,12 +165,34 @@ public class Population {
         Double enumSize = (double) Direction.Local.class.getEnumConstants().length;
         Double geneCountFloorConstraint = Math.ceil(populationSize / enumSize);
 
-        Double totalDiversity = 0d;
+        // Prepare tasks
+        List<GeneDiversityTask> tasks = new ArrayList<>();
         for(int geneIndex = 0; geneIndex < SEQUENCE.getSequence().size() - 1; ++geneIndex) {
-            Double diversity = getGeneDiversity(populationSize, geneCountFloorConstraint, geneIndex);
-            totalDiversity += diversity;
+            GeneDiversityTask task = new GeneDiversityTask(population, populationSize, geneCountFloorConstraint, geneIndex);
+            tasks.add(task);
         }
 
+        // Execute tasks
+        List<Future<Double>> diversities = null;
+        try {
+            diversities = threadPool.invokeAll(tasks);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(4);
+        }
+
+        // Process results
+        Double totalDiversity = 0d;
+        try {
+            for(Future<Double> diversity : diversities) {
+                totalDiversity += diversity.get();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            System.exit(5);
+        }
+
+        // Return diversity
         totalDiversity /= (double) SEQUENCE.getSequence().size();
         totalDiversity *= 50d;  //TODO: Mathematische Grundlage für Magic Number herausfinden.
         return totalDiversity;
@@ -185,35 +208,6 @@ public class Population {
         mutationRate /= 2d; // Normalize
         mutationRate *= 40d;    // Attenuation
         return  mutationRate;
-    }
-
-    private Double getGeneDiversity(Double populationSize, Double geneCountFloorConstraint, int geneIndex) {
-        // Count all different genes (L, R, F)
-        Map<Direction.Local, Integer> geneCounter = new EnumMap<>(Direction.Local.class);
-        for(Direction.Local direction : Direction.Local.class.getEnumConstants()) {
-            geneCounter.putIfAbsent(direction, 0);
-        }
-
-        for(Protein candidate : population) {
-            Direction.Local gene = candidate.getGenotype().get(geneIndex);
-            Integer geneCount = geneCounter.get(gene);
-            ++geneCount;
-            geneCounter.put(gene, geneCount);
-        }
-
-        // Get the highest gene count
-        Integer mostCommonGeneCount = 0;
-        for(Integer geneCount : geneCounter.values()) {
-            if(geneCount > mostCommonGeneCount) {
-                mostCommonGeneCount = geneCount;
-            }
-        }
-
-        // Calculate diversity
-        Double biasedGeneCount = mostCommonGeneCount.doubleValue() - 2.5; //TODO: Daniel fragen wie genau die Magic Number hier berechnet werden kann. Wahrscheinlich irgendwas mit Fehlerfunktion oder Multinomialverteilung.
-        Double constrainedGeneCount = ( biasedGeneCount < geneCountFloorConstraint) ? geneCountFloorConstraint : biasedGeneCount;
-        Double diversity = ((constrainedGeneCount - geneCountFloorConstraint) / (populationSize - geneCountFloorConstraint));
-        return diversity;
     }
 
     private void doMutationsRandomlyDistributed(Integer iterations) {
