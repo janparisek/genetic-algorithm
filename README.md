@@ -100,10 +100,10 @@ Many `Proteins` with a potentially bad score can be avoided by not allowing amin
 ### Classes
 All classes were constructed to be as lightweight as possible. The less there is to copy, the faster everything performs.
 
-## Takeaway
 ### Multithreading
-Further optimization may be made by using workers. This can be achieved by passing the fitness evaluation of `Protein`s into various threads.
+The fitness evaluation of `Protein`s within one generation is handled concurrently by multiple threads.
 
+## TODO
 ### Mutation base rate
 This part of the code needs improvement, since it's a bit messy.
 

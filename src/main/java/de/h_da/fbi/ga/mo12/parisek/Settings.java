@@ -4,7 +4,7 @@ import de.h_da.fbi.ga.mo12.parisek.genetics.Population.SelectionAlgorithm;
 import de.h_da.fbi.ga.mo12.parisek.genetics.Population.DiversityAlgorithm;
 
 public class Settings {
-    public final static Integer GENERATIONS = 100_000;
+    public final static Integer GENERATIONS = 2_000;
     public final static Integer POPULATION_SIZE = 1_000;
     public final static String SEQUENCE = Examples.SEQ60;
 
