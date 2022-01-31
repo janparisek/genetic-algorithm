@@ -206,6 +206,7 @@ public class Population {
         Double mutationRate = Math.sin((generationNumber * TWO_PI / PERIOD) - HALF_PI);
         mutationRate += 1d; // Shift upwards so it doesn't go below zero
         mutationRate /= 2d; // Normalize
+        mutationRate = Math.pow(mutationRate, 4d);
         mutationRate *= 40d;    // Attenuation
         return  mutationRate;
     }
